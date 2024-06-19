@@ -173,9 +173,10 @@ myApp.controller('MyCtrl', ['$scope', 'Upload', '$timeout', '$log', '$http', '$l
           file: file,
           data: {
           	awesomeThings: "Here",
-          	targetPath: 'support/Upload Folder/'
+          	targetPath: 'Upload Folder/'
           }
       }).then(function (response) {
+        $log.log(response);
       	$scope.updateOldData($scope.processIdentifications);
         $timeout(function () {
             file.result = response.data;
@@ -196,7 +197,7 @@ myApp.controller('MyCtrl', ['$scope', 'Upload', '$timeout', '$log', '$http', '$l
   };
 
   $scope.processIdentifications = function() {
-  	var url = "support/php/processIdentifications.php";
+  	var url = "support/php/ProcessIdentifications.php";
     $scope.files.modifications.file.progress = -1;
     $scope.files.peakList.file.progress = -1;
   	// send time stamp and file name as post data
@@ -205,25 +206,12 @@ myApp.controller('MyCtrl', ['$scope', 'Upload', '$timeout', '$log', '$http', '$l
   		fileName: $scope.files.identifications.file.name
   	};
 
-    // see what file type the uploaded doc is
-    var isMzTab = data.fileName.search(/.mztab/i);
-    var isMzIdentML = data.fileName.search(/.mzid/i);
-
-    if (isMzTab != -1) {
-      console.log("file is mztab");
-      url = "support/php/processMzTab.php";
-    } else if (isMzIdentML != -1) {
-      console.log("file is mzIdentML");
-      url = "support/php/processMzIdentML.php";
-    }
-
     $http.post(url, data)
       .then( function(response) {
         if (response.data.hasOwnProperty("error")) {
           alert(response.data.error);
           $scope.files.identifications.isProcessing = false;
         } else {
-          $log.log(response.data);
           let url = "support/php/RetrieveFirstEntry.php";
           let data = {
             timeStamp: $localStorage.timeStampIdentifier,
@@ -236,7 +224,6 @@ myApp.controller('MyCtrl', ['$scope', 'Upload', '$timeout', '$log', '$http', '$l
                 alert(response.data.error);
                 $scope.files.identifications.isProcessing = false;
               } else {
-                $log.log(response.data);
                 $scope.files.identifications.exampleEntry = response.data;
             }
           });
@@ -244,8 +231,8 @@ myApp.controller('MyCtrl', ['$scope', 'Upload', '$timeout', '$log', '$http', '$l
           $scope.files.identifications.isProcessing = false;
           $scope.identifications = response.data;
           $scope.files.identifications.confirmMsg = "Upload Successful";
-        }
-      });
+       }
+    });
   };
 
   $scope.uploadPeakList = function(file) {
@@ -261,7 +248,7 @@ myApp.controller('MyCtrl', ['$scope', 'Upload', '$timeout', '$log', '$http', '$l
         method: 'POST',
         file: file,
         data: {
-        	targetPath: 'support/Upload Folder/'
+        	targetPath: 'Upload Folder/'
         }
       }).then(function (response) {
         $log.log("Upload");
@@ -291,7 +278,7 @@ myApp.controller('MyCtrl', ['$scope', 'Upload', '$timeout', '$log', '$http', '$l
     if ($scope.files.peakList.file.name.split(".")[1].toUpperCase() === "MGF") {
       url = "support/php/ProcessMgf.php";
     } else {
-      url = "support/php/ProcessMzml.php";
+      url = "support/php/ProcessMzML.php";
     }
     $scope.files.modifications.isValid = false;
     $scope.files.modifications.file.progress = -1;
@@ -355,7 +342,7 @@ myApp.controller('MyCtrl', ['$scope', 'Upload', '$timeout', '$log', '$http', '$l
           file: file,
           data: {
           	awesomeThings: "Here",
-          	targetPath: 'support/Upload Folder/'
+          	targetPath: 'Upload Folder/'
           }
       }).then(function (response) {
       	$scope.updateOldData($scope.processModifications);
@@ -388,6 +375,7 @@ myApp.controller('MyCtrl', ['$scope', 'Upload', '$timeout', '$log', '$http', '$l
 
     $http.post(url, data)
       .then( function(response) {
+        $log.log(response);
         if (response.data.hasOwnProperty("error")) {
           alert(response.data.error);
           $scope.files.modifications.isProcessing = false;
