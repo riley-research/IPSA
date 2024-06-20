@@ -266,49 +266,6 @@
                               >
                             </div>
                           </div>
-                          <div class="col-md-9">
-                            <label>Select Glycan Modification</label>
-                            <div class="form-group">
-                              <ui-select
-                                ng-model="N5H4F1"
-                                search-enabled="false"
-                              >
-                                <ui-select-match
-                                  placeholder="Click and type/scroll to search for glycan modification"
-                                >
-                                  <span ng-bind="formatSelect()"></span>
-                                </ui-select-match>
-                                <ui-select-choices
-                                  repeat="option in ['N5H4F1 – 1809.66607', 'N1H1 – 365.1322', 'N4H3F1 – 1444.53387', 'N5H5F1 – 1971.71889', 'N1H1A2 – 947.32303', 'N3H3A1 – 1386.492', 'deamN – 0.98402', 'N3H2A1 – 1224.43918', 'N6H7F1A2 – 3081.09474', 'N4H1 – 974.37031', 'N4H4F3 – 1898.70251', 'N6H3F1 – 1850.69261']"
-                                >
-                                  <span ng-bind="option"></span>
-                                </ui-select-choices>
-                              </ui-select>
-                            </div>
-                          </div>
-                          <!-- <div class="col-md-4">
-                            <label>Glycan Modifications</label>
-                            <div class="btn-group">
-                              <label
-                                class="btn btn-fragment"
-                                ng-model="checkModel.H2O.selected"
-                                uib-btn-checkbox
-                                >N5H4F1</label
-                              >
-                              <label
-                                class="btn btn-fragment"
-                                ng-model="checkModel.NH3.selected"
-                                uib-btn-checkbox
-                                >-NH<sub>3</sub></label
-                              >
-                              <label
-                                class="btn btn-fragment"
-                                ng-model="checkModel.CO2.selected"
-                                uib-btn-checkbox
-                                >-CO<sub>2</sub></label
-                              >
-                            </div>
-                          </div> -->
                         </div>
                         <br />
                         <div ng-controller="ColorCtrl">

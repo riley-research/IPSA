@@ -131,7 +131,20 @@ class Peptide {
 	
 	function CalculateFragmentMZs() {
 		$length = count($this->aminoAcids);
-		
+
+		error_log("CalculateFragmentMZs function called with " . $length . " amino acids.");
+        error_log("Sequence: " . $this->sequence);
+        error_log("Precursor Charge: " . $this->precursorCharge);
+        error_log("Charge: " . $this->charge);
+        error_log("Fragment Types: " . json_encode($this->fragTypes));
+        error_log("Tolerance: " . $this->tolerance);
+        error_log("Tolerance Type: " . $this->toleranceType);
+        error_log("Matching Type: " . $this->matchType);
+        error_log("Cutoff: " . $this->cutoff);
+        error_log("Mods: " . json_encode($this->modifications));
+        error_log("Peak Data: " . json_encode($this->peakData));
+        error_log("Base Peak: " . json_encode($this->basePeak));	
+
 		if ($this->fragTypes->a->selected) {
 			for ($i = 1; $i < $length; $i++) {
 				$subPeptide = array_slice($this->aminoAcids, 0, $i);
