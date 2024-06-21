@@ -228,38 +228,13 @@ angular.module("IPSA.bulk.controller").controller("GraphCtrl", [
           charge = $scope.peptide.charge;
         }
 
-        // Modify mods based on the glycan option
-        var mods = $scope.peptide.mods;
-        if ($scope.checkModel.glycanOption.value === "fullGlycanLost") {
-          mods = $scope.peptide.mods.map((mod) => ({ ...mod, deltaMass: 0 }));
-        } else if (
-          $scope.checkModel.glycanOption.value === "partialGlycanHexNAcAttached"
-        ) {
-          mods = $scope.peptide.mods.map((mod) => ({
-            ...mod,
-            deltaMass: glycanMasses.HexNAc.monoisotopic,
-          }));
-        } else if (
-          $scope.checkModel.glycanOption.value === "fullGlycanAttached"
-        ) {
-          mods = $scope.peptide.mods;
-        } else if (
-          $scope.checkModel.glycanOption.value === "partialGlycanUserUploaded"
-        ) {
-          // Assuming partialGlycanMasses is an array of user-uploaded masses
-          mods = $scope.peptide.mods.map((mod, index) => ({
-            ...mod,
-            deltaMass: $scope.partialGlycanMasses[index] || mod.deltaMass,
-          }));
-        }
-
         var data = {
           sequence: $scope.peptide.sequence,
           precursorCharge: $scope.peptide.precursorCharge,
           charge: charge,
           fragmentTypes: $scope.checkModel,
           peakData: submitData,
-          mods: mods,
+          mods: $scope.peptide.mods,
           toleranceType: $scope.cutoffs.toleranceType,
           tolerance: $scope.cutoffs.tolerance,
           matchingType: $scope.cutoffs.matchingType,
