@@ -275,10 +275,27 @@ angular.module("IPSA.bulk.controller").controller("GraphCtrl", [
           } else {
             $log.log(response.data);
             $scope.annotatedResults = response.data;
-            $scope.plotData($scope.annotatedResults);
+
+            $scope.renderData();
           }
         });
       }
+    };
+
+    $scope.renderData = function () {
+      var selectedGlycanOption = $scope.checkModel.glycanOption.value;
+
+      $log.log("Selected glycanOption: ", $scope.checkModel.glycanOption.value);
+
+      var selectedData = $scope.annotatedResults.find(
+        (item) => item.glycanOption === selectedGlycanOption
+      );
+      $scope.filteredAnnotatedResults = selectedData
+        ? selectedData.peptide
+        : null;
+
+      $log.log("Filtered Annotated Results: ", $scope.filteredAnnotatedResults);
+      $scope.plotData($scope.filteredAnnotatedResults);
     };
 
     $scope.invalidColors = function () {
