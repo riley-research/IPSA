@@ -257,10 +257,24 @@ angular.module("IPSA.bulk.controller").controller("GraphCtrl", [
       }
     };
 
-    $scope.renderData = function () {
-      var selectedGlycanOption = $scope.checkModel.glycanOption.value;
+    $scope.toggleGlycanOption = function (option) {
+      var idx = $scope.checkModel.glycanOption.values.indexOf(option);
+      if (idx > -1) {
+        // Option is already selected, remove it
+        $scope.checkModel.glycanOption.values.splice(idx, 1);
+      } else {
+        // Option is not selected, add it
+        $scope.checkModel.glycanOption.values.push(option);
+      }
+    };
 
-      $log.log("Selected glycanOption: ", $scope.checkModel.glycanOption.value);
+    $scope.renderData = function () {
+      var selectedGlycanOption = $scope.checkModel.glycanOption.values[0];
+
+      $log.log(
+        "Selected glycanOption: ",
+        $scope.checkModel.glycanOption.values[0]
+      );
 
       var selectedData = $scope.annotatedResults.find(
         (item) => item.glycanOption === selectedGlycanOption

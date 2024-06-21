@@ -5,58 +5,49 @@
   <div class="panel-body">
     <div class="col-md-12">
       <div ng-controller="DataCtrl">
-        <div class="row-md-4">
+        <div class="form-group">
           <label>Glycan</label>
-          <div class="btn-group" data-toggle="buttons">
-            <label
-              class="btn btn-fragment"
-              ng-class="{'active': checkModel.glycanOption.value === 'fullGlycanAttached'}"
-            >
-              <input
-                type="radio"
-                name="glycanOptions"
-                ng-model="checkModel.glycanOption.value"
-                value="fullGlycanAttached"
-              />
-              Full Glycan Attached
-            </label>
-            <label
-              class="btn btn-fragment"
-              ng-class="{'active': checkModel.glycanOption.value === 'partialGlycanHexNAcAttached'}"
-            >
-              <input
-                type="radio"
-                name="glycanOptions"
-                ng-model="checkModel.glycanOption.value"
-                value="partialGlycanHexNAcAttached"
-              />
-              Only HexNAc Attached
-            </label>
-            <label
-              class="btn btn-fragment"
-              ng-class="{'active': checkModel.glycanOption.value === 'fullGlycanLost'}"
-            >
-              <input
-                type="radio"
-                name="glycanOptions"
-                ng-model="checkModel.glycanOption.value"
-                value="fullGlycanLost"
-              />
-              Full Glycan Lost
-            </label>
+          <div class="checkbox-group">
+            <div class="checkbox">
+              <label>
+                <input
+                  type="checkbox"
+                  ng-checked="checkModel.glycanOption.values.includes('fullGlycanAttached')"
+                  ng-click="toggleGlycanOption('fullGlycanAttached')"
+                />
+                Full Glycan Attached
+              </label>
+            </div>
+            <div class="checkbox">
+              <label>
+                <input
+                  type="checkbox"
+                  ng-checked="checkModel.glycanOption.values.includes('partialGlycanHexNAcAttached')"
+                  ng-click="toggleGlycanOption('partialGlycanHexNAcAttached')"
+                />
+                Only HexNAc Attached
+              </label>
+            </div>
+            <div class="checkbox">
+              <label>
+                <input
+                  type="checkbox"
+                  ng-checked="checkModel.glycanOption.values.includes('fullGlycanLost')"
+                  ng-click="toggleGlycanOption('fullGlycanLost')"
+                />
+                Full Glycan Lost
+              </label>
+            </div>
           </div>
         </div>
-        <br />
-        <div class="row">
-          <div class="col-md-12">
-            <button
-              class="btn btn-primary"
-              ng-click="renderData()"
-              ng-disabled="!idObject.selectedSequence || !filteredAnnotatedResults"
-            >
-              Update Render
-            </button>
-          </div>
+        <div class="form-group">
+          <button
+            class="btn btn-primary"
+            ng-click="renderData()"
+            ng-disabled="!idObject.selectedSequence || !filteredAnnotatedResults"
+          >
+            Update Render
+          </button>
         </div>
       </div>
     </div>

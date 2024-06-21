@@ -138,7 +138,7 @@ myApp.controller(
       unassigned: { selected: true, color: "#A6A6A6" },
 
       // values can be "fullGlycanAttached", "partialGlycanHexNAcAttached", or "fullGlycanLost"
-      glycanOption: { value: "fullGlycanAttached", color: "#FF0000" },
+      glycanOption: { values: ["fullGlycanAttached"], color: "#FF0000" },
     };
 
     $scope.checkResults = {
