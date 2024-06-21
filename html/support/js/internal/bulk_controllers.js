@@ -3,6 +3,7 @@ angular.module("IPSA.bulk.controller").controller("GraphCtrl", [
   "$log",
   "$http",
   "$localStorage",
+
   function ($scope, $log, $http, $localStorage) {
     var populateMods = function () {
       var returnArray = [];
@@ -14,6 +15,25 @@ angular.module("IPSA.bulk.controller").controller("GraphCtrl", [
         });
       }
       return returnArray;
+    };
+
+    const glycanMasses = {
+      Neu5Ac: {
+        monoisotopic: 291.09542,
+        average: 291.25458,
+      },
+      Hexose: {
+        monoisotopic: 162.05282,
+        average: 162.1406,
+      },
+      HexNAc: {
+        monoisotopic: 203.07937,
+        average: 203.19252,
+      },
+      Fucose: {
+        monoisotopic: 146.05791,
+        average: 146.1412,
+      },
     };
 
     $scope.set = {
@@ -215,7 +235,10 @@ angular.module("IPSA.bulk.controller").controller("GraphCtrl", [
         } else if (
           $scope.checkModel.glycanOption.value === "partialGlycanHexNAcAttached"
         ) {
-          mods = $scope.peptide.mods.map((mod) => ({ ...mod, deltaMass: 203 }));
+          mods = $scope.peptide.mods.map((mod) => ({
+            ...mod,
+            deltaMass: glycanMasses.HexNAc.monoisotopic,
+          }));
         } else if (
           $scope.checkModel.glycanOption.value === "fullGlycanAttached"
         ) {
