@@ -268,6 +268,48 @@
                           </div>
                         </div>
                         <br />
+                        <div class="row-md-4">
+                          <label>Glycan</label>
+                          <div class="btn-group" data-toggle="buttons">
+                            <label
+                              class="btn btn-fragment"
+                              ng-class="{'active': checkModel.glycanOption.value === 'fullGlycanAttached'}"
+                            >
+                              <input
+                                type="radio"
+                                name="glycanOptions"
+                                ng-model="checkModel.glycanOption.value"
+                                value="fullGlycanAttached"
+                              />
+                              Full Glycan Attached
+                            </label>
+                            <label
+                              class="btn btn-fragment"
+                              ng-class="{'active': checkModel.glycanOption.value === 'partialGlycanHexNAcAttached'}"
+                            >
+                              <input
+                                type="radio"
+                                name="glycanOptions"
+                                ng-model="checkModel.glycanOption.value"
+                                value="partialGlycanHexNAcAttached"
+                              />
+                              Only HexNAc Attached
+                            </label>
+                            <label
+                              class="btn btn-fragment"
+                              ng-class="{'active': checkModel.glycanOption.value === 'fullGlycanLost'}"
+                            >
+                              <input
+                                type="radio"
+                                name="glycanOptions"
+                                ng-model="checkModel.glycanOption.value"
+                                value="fullGlycanLost"
+                              />
+                              Full Glycan Lost
+                            </label>
+                          </div>
+                        </div>
+                        <br />
                         <div ng-controller="ColorCtrl">
                           <div class="row">
                             <div
