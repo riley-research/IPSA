@@ -147,7 +147,18 @@ angular.module("IPSA.bulk.controller").controller("GraphCtrl", [
           $scope.set.plotData.massError.push("");
           $scope.set.plotData.theoMz.push(0);
         } else {
-          var peakData = data.matchedFeatures[0];
+          $log.log("matched features: ", data.matchedFeatures);
+
+          var peakData =
+            data.matchedFeatures.find(
+              (feature) => feature.feature.associatedGlycan === "fullGlycanLost"
+            ) ||
+            data.matchedFeatures.find(
+              (feature) =>
+                feature.feature.associatedGlycan ===
+                "partialGlycanHexNAcAttached"
+            ) ||
+            data.matchedFeatures[0];
 
           if (typeof peakData.feature === "undefined") {
             $log.log("undefined peak: ", peakData);
@@ -187,7 +198,16 @@ angular.module("IPSA.bulk.controller").controller("GraphCtrl", [
               "[" + fragment.type + fragment.number + "]"
             );
           } else {
-            $scope.set.plotData.label.push(fragment.type + fragment.number);
+            if (fragment.associatedGlycan) {
+              $scope.set.plotData.label.push(
+                fragment.type + fragment.number
+                // +
+                // "+" +
+                // fragment.associatedGlycan
+              );
+            } else {
+              $scope.set.plotData.label.push(fragment.type + fragment.number);
+            }
           }
 
           $scope.set.plotData.barwidth.push(3);

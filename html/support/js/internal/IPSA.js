@@ -66,8 +66,17 @@ angular
       // Lazy cast charge to a string
       charge += "";
 
+      var glycanAttachmentString = "";
+
       // if there is a label to format, format it
       if (label) {
+        // check if the label contains a glycan attachment
+        if (label.includes("+")) {
+          let plusIndex = label.indexOf("+");
+          glycanAttachmentString = label.slice(plusIndex);
+          label = label.slice(0, plusIndex);
+        }
+
         // special logic to format labels containing brackets i.e. unreacted precursor
         if (label[0] == "[") {
           label = label.slice(1, -1);
@@ -259,7 +268,8 @@ angular
           }
         }
       }
-      return returnString;
+
+      return returnString + glycanAttachmentString;
     };
 
     /**
