@@ -199,11 +199,19 @@ angular.module("IPSA.bulk.controller").controller("GraphCtrl", [
             );
           } else {
             if (fragment.associatedGlycan) {
+              var associatedGlycanText;
+              if (fragment.associatedGlycan == "fullGlycanLost") {
+                associatedGlycanText = "";
+              } else if (
+                fragment.associatedGlycan == "partialGlycanHexNAcAttached"
+              ) {
+                associatedGlycanText = "+N";
+              } else {
+                associatedGlycanText = "+N3H2A1";
+              }
+
               $scope.set.plotData.label.push(
-                fragment.type + fragment.number
-                // +
-                // "+" +
-                // fragment.associatedGlycan
+                fragment.type + fragment.number + associatedGlycanText
               );
             } else {
               $scope.set.plotData.label.push(fragment.type + fragment.number);
@@ -220,66 +228,95 @@ angular.module("IPSA.bulk.controller").controller("GraphCtrl", [
     };
 
     $scope.processData = function () {
-      var url = "";
-      if ($scope.peptide.precursorCharge > 0) {
-        url = "support/php/ProcessData.php";
-      } else {
-        url = "support/php/NegativeModeProcessData.php";
-      }
-
-      let submitData;
+      var url =
+        $scope.peptide.precursorCharge > 0
+          ? "support/php/ProcessData.php"
+          : "support/php/NegativeModeProcessData.php";
 
       if ($scope.invalidColors()) {
         return;
-      } else {
-        // Only send over relevant data for processing
-        if ($scope.db.items[0].hasOwnProperty("sN")) {
-          submitData = $scope.db.items.map(({ mZ, intensity, sN }) => ({
-            mZ,
-            intensity,
-            sN,
-          }));
-        } else {
-          submitData = $scope.db.items.map(({ mZ, intensity }) => ({
-            mZ,
-            intensity,
-          }));
-        }
-
-        var charge = 0;
-        if ($scope.peptide.precursorCharge > 0) {
-          charge = $scope.peptide.charge + 1;
-        } else {
-          charge = $scope.peptide.charge;
-        }
-
-        var data = {
-          sequence: $scope.peptide.sequence,
-          precursorCharge: $scope.peptide.precursorCharge,
-          charge: charge,
-          fragmentTypes: $scope.checkModel,
-          peakData: submitData,
-          mods: $scope.peptide.mods,
-          toleranceType: $scope.cutoffs.toleranceType,
-          tolerance: $scope.cutoffs.tolerance,
-          matchingType: $scope.cutoffs.matchingType,
-          cutoff: $scope.cutoffs.matchingCutoff,
-        };
-
-        $scope.submittedData = data;
-
-        $http.post(url, data).then(function (response) {
-          // If errors exist, alert user
-          if (response.data.hasOwnProperty("error")) {
-            alert(response.data.error);
-          } else {
-            $log.log(response.data);
-            $scope.annotatedResults = response.data;
-
-            $scope.renderData();
-          }
-        });
       }
+
+      let submitData = $scope.db.items.map((item) => ({
+        mZ: item.mZ,
+        intensity: item.intensity,
+        sN: item.hasOwnProperty("sN") ? item.sN : undefined,
+      }));
+
+      var charge =
+        $scope.peptide.precursorCharge > 0
+          ? $scope.peptide.charge + 1
+          : $scope.peptide.charge;
+
+      var data = {
+        sequence: $scope.peptide.sequence,
+        precursorCharge: $scope.peptide.precursorCharge,
+        charge: charge,
+        fragmentTypes: $scope.checkModel,
+        peakData: submitData,
+        mods: $scope.peptide.mods,
+        toleranceType: $scope.cutoffs.toleranceType,
+        tolerance: $scope.cutoffs.tolerance,
+        matchingType: $scope.cutoffs.matchingType,
+        cutoff: $scope.cutoffs.matchingCutoff,
+      };
+
+      $http.post(url, data).then(function (response) {
+        if (response.data.hasOwnProperty("error")) {
+          alert(response.data.error);
+        } else {
+          $scope.annotatedResults = response.data;
+          $scope.filterFeatures(); // Call new method to filter features before rendering
+          $scope.renderData();
+        }
+      });
+    };
+
+    $scope.filterFeatures = function () {
+      let priority = ["fullGlycanLost", "partialGlycanHexNAcAttached"];
+      let featureSets = {};
+
+      // Initialize sets to track unique features by glycan option
+      priority.forEach((option) => (featureSets[option] = new Set()));
+
+      // Collect features by glycan option
+      $scope.annotatedResults.forEach((result) => {
+        if (priority.includes(result.glycanOption)) {
+          result.peptide.peaks.forEach((peak) => {
+            peak.matchedFeatures.forEach((feature) => {
+              let featureString = JSON.stringify(feature.feature); // Convert feature object to string for unique comparison
+              featureSets[result.glycanOption].add(featureString);
+            });
+          });
+        }
+      });
+
+      // Remove duplicates based on priority
+      priority.forEach((option, index) => {
+        if (index < priority.length - 1) {
+          let higherPriorityFeatures = featureSets[option];
+          for (let i = index + 1; i < priority.length; i++) {
+            let lowerPriorityOption = priority[i];
+            featureSets[lowerPriorityOption].forEach((feat) => {
+              if (higherPriorityFeatures.has(feat)) {
+                featureSets[lowerPriorityOption].delete(feat);
+              }
+            });
+          }
+        }
+      });
+
+      // Reassign filtered matchedFeatures to annotatedResults
+      $scope.annotatedResults.forEach((result) => {
+        if (priority.includes(result.glycanOption)) {
+          result.peptide.peaks.forEach((peak) => {
+            peak.matchedFeatures = peak.matchedFeatures.filter((feature) => {
+              let featureString = JSON.stringify(feature.feature);
+              return featureSets[result.glycanOption].has(featureString);
+            });
+          });
+        }
+      });
     };
 
     $scope.toggleGlycanOption = function (option) {
