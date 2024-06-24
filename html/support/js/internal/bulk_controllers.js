@@ -148,6 +148,11 @@ angular.module("IPSA.bulk.controller").controller("GraphCtrl", [
           $scope.set.plotData.theoMz.push(0);
         } else {
           var peakData = data.matchedFeatures[0];
+
+          if (typeof peakData.feature === "undefined") {
+            $log.log("undefined peak: ", peakData);
+          }
+
           var fragment = peakData.feature;
           if (fragment.type == "a") {
             $scope.set.plotData.color.push($scope.colorArray[0]);
@@ -269,21 +274,73 @@ angular.module("IPSA.bulk.controller").controller("GraphCtrl", [
     };
 
     $scope.renderData = function () {
-      var selectedGlycanOption = $scope.checkModel.glycanOption.values[0];
+      var selectedGlycanOptions = $scope.checkModel.glycanOption.values;
 
-      $log.log(
-        "Selected glycanOption: ",
-        $scope.checkModel.glycanOption.values[0]
-      );
+      $log.log("Selected glycanOptions: ", selectedGlycanOptions);
 
-      var selectedData = $scope.annotatedResults.find(
-        (item) => item.glycanOption === selectedGlycanOption
-      );
-      $scope.filteredAnnotatedResults = selectedData
-        ? selectedData.peptide
-        : null;
+      // Initialize an empty object to store the merged peptide data
+      var mergedPeptide = null;
+
+      // Iterate through each glycan option selected
+      selectedGlycanOptions.forEach((glycanOption) => {
+        // Find the annotated result for the current glycan option
+        var selectedData = $scope.annotatedResults.find(
+          (item) => item.glycanOption === glycanOption
+        );
+
+        if (selectedData && selectedData.peptide) {
+          if (!mergedPeptide) {
+            // If mergedPeptide is not initialized, use the first found peptide as the starting point
+            mergedPeptide = angular.copy(selectedData.peptide);
+
+            // Set the associatedGlycan property on the features of the initial peptide
+            mergedPeptide.peaks.forEach((peak) => {
+              peak.matchedFeatures.forEach((element) => {
+                if (element.feature) {
+                  element.feature.associatedGlycan = glycanOption;
+                } else {
+                  element = {
+                    feature: angular.copy(element),
+                    massError: element.massError || 0,
+                  };
+                  element.feature.associatedGlycan = glycanOption;
+                }
+              });
+            });
+          } else {
+            // Merge the matched features from the current peptide into the mergedPeptide
+            selectedData.peptide.peaks.forEach((peak, peakIndex) => {
+              if (!mergedPeptide.peaks[peakIndex]) {
+                mergedPeptide.peaks[peakIndex] = peak;
+              } else {
+                peak.matchedFeatures.forEach((element) => {
+                  if (element.feature) {
+                    element.feature.associatedGlycan = glycanOption;
+                    mergedPeptide.peaks[peakIndex].matchedFeatures.push(
+                      element
+                    );
+                  } else {
+                    element = {
+                      feature: angular.copy(element),
+                      massError: element.massError || 0,
+                    };
+                    element.feature.associatedGlycan = glycanOption;
+                    mergedPeptide.peaks[peakIndex].matchedFeatures.push(
+                      element
+                    );
+                  }
+                });
+              }
+            });
+          }
+        }
+      });
+
+      // Set filteredAnnotatedResults to the mergedPeptide object
+      $scope.filteredAnnotatedResults = mergedPeptide;
 
       $log.log("Filtered Annotated Results: ", $scope.filteredAnnotatedResults);
+
       $scope.plotData($scope.filteredAnnotatedResults);
     };
 
