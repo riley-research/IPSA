@@ -1,0 +1,55 @@
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <h3 class="panel-title">Glycosylation Options</h3>
+  </div>
+  <div class="panel-body">
+    <div class="col-md-12">
+      <div ng-controller="DataCtrl">
+        <div class="form-group">
+          <label>Glycan</label>
+          <div class="checkbox-group">
+            <div class="checkbox">
+              <label>
+                <input
+                  type="checkbox"
+                  ng-checked="checkModel.glycanOption.values.includes('fullGlycanAttached')"
+                  ng-click="toggleGlycanOption('fullGlycanAttached')"
+                />
+                Full Glycan Attached
+              </label>
+            </div>
+            <div class="checkbox">
+              <label>
+                <input
+                  type="checkbox"
+                  ng-checked="checkModel.glycanOption.values.includes('partialGlycanHexNAcAttached')"
+                  ng-click="toggleGlycanOption('partialGlycanHexNAcAttached')"
+                />
+                Only HexNAc Attached
+              </label>
+            </div>
+            <div class="checkbox">
+              <label>
+                <input
+                  type="checkbox"
+                  ng-checked="checkModel.glycanOption.values.includes('fullGlycanLost')"
+                  ng-click="toggleGlycanOption('fullGlycanLost')"
+                />
+                Full Glycan Lost
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <button
+            class="btn btn-primary"
+            ng-click="renderData()"
+            ng-disabled="!idObject.selectedSequence || !filteredAnnotatedResults"
+          >
+            Update Render
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

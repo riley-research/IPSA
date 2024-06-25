@@ -1,0 +1,333 @@
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <h3 class="panel-title">Annotation Options</h3>
+  </div>
+  <div class="panel-body">
+    <div class="col-md-12">
+      <div class="row">
+        <div class="col-md-9">
+          <label>Select Uploaded Sequence</label>
+          <div class="form-group">
+            <ui-select
+              ng-model="idObject.selectedSequence"
+              search-enabled="true"
+            >
+              <ui-select-match
+                placeholder="Click and type/scroll to search for peptide by sequence, scan, etc."
+              >
+                <span ng-bind="formatSelect()"></span>
+              </ui-select-match>
+              <ui-select-choices
+                repeat="id in ids | filter: $select.search | limitTo: 25"
+              >
+                <span ng-bind="formatOption(id)"></span>
+              </ui-select-choices>
+            </ui-select>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <label>Precursor Charge</label>
+          <div class="input-group-md">
+            <input
+              type="number"
+              class="form-control"
+              placeholder="Undefined..."
+              ng-model="idObject.selectedSequence.charge"
+              readonly
+            />
+          </div>
+        </div>
+      </div>
+      <div ng-controller="DataCtrl">
+        <div class="row">
+          <div class="col-md-4">
+            <label for="charge">Max Fragment Charge</label>
+            <div class="input-group-md">
+              <input
+                type="number"
+                class="form-control"
+                id="charge"
+                placeholder="1"
+                min="{{peptide.fragmentMin}}"
+                max="{{peptide.fragmentMax}}"
+                ng-model="peptide.charge"
+                ng-blur="validateFragmentCharge()"
+              />
+            </div>
+          </div>
+          <div class="col-md-4">
+            <label>Fragment Tolerance (+/-)</label>
+            <div class="input-group">
+              <input
+                type="number"
+                class="form-control"
+                ng-model="cutoffs.tolerance"
+                min="0"
+                ng-blur="validateTolerance()"
+              />
+              <span class="input-group-btn">
+                <button
+                  class="btn btn-primary"
+                  type="button"
+                  ng-click="swapToleranceType()"
+                >
+                  {{cutoffs.toleranceType}}
+                </button>
+              </span>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <label>Matching Threshold</label>
+            <div class="input-group">
+              <input
+                type="number"
+                class="form-control"
+                ng-model="cutoffs.matchingCutoff"
+                min="0"
+                ng-blur="validateThreshold()"
+              />
+              <span class="input-group-btn">
+                <button
+                  class="btn btn-primary"
+                  type="button"
+                  ng-click="swapMatchingType()"
+                >
+                  {{cutoffs.matchingType}}
+                </button>
+              </span>
+            </div>
+          </div>
+        </div>
+        <br />
+        <div class="row">
+          <div class="col-md-4">
+            <label>N-terminal</label>
+            <div class="btn-group">
+              <label
+                class="btn btn-fragment"
+                ng-model="checkModel.a.selected"
+                uib-btn-checkbox
+                >{{checkModel.a.label}}</label
+              >
+              <label
+                class="btn btn-fragment"
+                ng-model="checkModel.b.selected"
+                uib-btn-checkbox
+                >{{checkModel.b.label}}</label
+              >
+              <label
+                class="btn btn-fragment"
+                ng-model="checkModel.c.selected"
+                uib-btn-checkbox
+                >{{checkModel.c.label}}</label
+              >
+              <label
+                class="btn btn-fragment"
+                ng-model="checkModel.C.selected"
+                uib-btn-checkbox
+                >{{checkModel.C.label}}</label
+              >
+            </div>
+          </div>
+          <div class="col-md-4">
+            <label>C-terminal</label>
+            <div class="btn-group">
+              <label
+                class="btn btn-fragment"
+                ng-model="checkModel.x.selected"
+                uib-btn-checkbox
+                >{{checkModel.x.label}}</label
+              >
+              <label
+                class="btn btn-fragment"
+                ng-model="checkModel.y.selected"
+                uib-btn-checkbox
+                >{{checkModel.y.label}}</label
+              >
+              <label
+                class="btn btn-fragment"
+                ng-model="checkModel.z.selected"
+                uib-btn-checkbox
+                >{{checkModel.z.label}}</label
+              >
+              <label
+                class="btn btn-fragment"
+                ng-model="checkModel.Z.selected"
+                uib-btn-checkbox
+                >{{checkModel.Z.label}}</label
+              >
+            </div>
+          </div>
+          <div class="col-md-4">
+            <label>Neutral Losses</label>
+            <div class="btn-group">
+              <label
+                class="btn btn-fragment"
+                ng-model="checkModel.H2O.selected"
+                uib-btn-checkbox
+                >-H<sub>2</sub>O</label
+              >
+              <label
+                class="btn btn-fragment"
+                ng-model="checkModel.NH3.selected"
+                uib-btn-checkbox
+                >-NH<sub>3</sub></label
+              >
+              <label
+                class="btn btn-fragment"
+                ng-model="checkModel.CO2.selected"
+                uib-btn-checkbox
+                >-CO<sub>2</sub></label
+              >
+            </div>
+          </div>
+        </div>
+        <br />
+        <br />
+        <div ng-controller="ColorCtrl">
+          <div class="row">
+            <div class="col-md-3" ng-hide="!checkModel.a.selected">
+              <label for="wheel-demo">{{checkModel.a.label}}</label>
+              <input
+                minicolors="wheelsettings"
+                id="wheel-demo"
+                class="form-control"
+                type="text"
+                ng-model="checkModel.a.color"
+              />
+            </div>
+            <div class="col-md-3" ng-hide="!checkModel.b.selected">
+              <label for="wheel-demo">{{checkModel.b.label}}</label>
+              <input
+                minicolors="wheelsettings"
+                id="wheel-demo"
+                class="form-control"
+                type="text"
+                ng-model="checkModel.b.color"
+              />
+            </div>
+            <div class="col-md-3" ng-hide="!checkModel.c.selected">
+              <label for="wheel-demo">{{checkModel.c.label}}</label>
+              <input
+                minicolors="wheelsettings"
+                id="wheel-demo"
+                class="form-control"
+                type="text"
+                ng-model="checkModel.c.color"
+              />
+            </div>
+            <div class="col-md-3" ng-hide="!checkModel.C.selected">
+              <label for="wheel-demo">{{checkModel.C.label}}</label>
+              <input
+                minicolors="wheelsettings"
+                id="wheel-demo"
+                class="form-control"
+                type="text"
+                ng-model="checkModel.C.color"
+              />
+            </div>
+            <div class="col-md-3" ng-hide="!checkModel.x.selected">
+              <label for="wheel-demo">{{checkModel.x.label}}</label>
+              <input
+                minicolors="wheelsettings"
+                id="wheel-demo"
+                class="form-control"
+                type="text"
+                ng-model="checkModel.x.color"
+              />
+            </div>
+            <div class="col-md-3" ng-hide="!checkModel.y.selected">
+              <label for="wheel-demo">{{checkModel.y.label}}</label>
+              <input
+                minicolors="wheelsettings"
+                id="wheel-demo"
+                class="form-control"
+                type="text"
+                ng-model="checkModel.y.color"
+              />
+            </div>
+            <div class="col-md-3" ng-hide="!checkModel.z.selected">
+              <label for="wheel-demo">{{checkModel.z.label}}</label>
+              <input
+                minicolors="wheelsettings"
+                id="wheel-demo"
+                class="form-control"
+                type="text"
+                ng-model="checkModel.z.color"
+              />
+            </div>
+            <div class="col-md-3" ng-hide="!checkModel.Z.selected">
+              <label for="wheel-demo">{{checkModel.Z.label}}</label>
+              <input
+                minicolors="wheelsettings"
+                id="wheel-demo"
+                class="form-control"
+                type="text"
+                ng-model="checkModel.Z.color"
+              />
+            </div>
+            <div class="col-md-3">
+              <label for="wheel-demo">Precursor</label>
+              <input
+                minicolors="wheelsettings"
+                id="wheel-demo"
+                class="form-control"
+                type="text"
+                ng-model="checkModel.precursor.color"
+              />
+            </div>
+            <div class="col-md-3">
+              <label for="wheel-demo">Unassigned</label>
+              <input
+                minicolors="wheelsettings"
+                id="wheel-demo"
+                class="form-control"
+                type="text"
+                ng-model="checkModel.unassigned.color"
+              />
+            </div>
+          </div>
+        </div>
+        <br />
+        <div class="row">
+          <div class="col-md-12">
+            <button
+              type="submit"
+              class="btn btn-success"
+              ng-click="processData()"
+              ng-disabled="!idObject.selectedSequence"
+            >
+              Generate Chart
+            </button>
+            <button
+              class="btn btn-primary"
+              ng-click="downloadData()"
+              ng-disabled="!idObject.selectedSequence"
+            >
+              Export Data
+            </button>
+
+            <button
+              svg-download
+              title="{{peptide.sequence}}"
+              class="btn btn-primary"
+            >
+              Download as SVG
+            </button>
+            <button
+              class="btn btn-danger"
+              type="button"
+              ng-disabled="ids.length <= 0 || isProcessing"
+              ng-click="AnnotateAllData()"
+            >
+              <span ng-hide="isProcessing">Export Fragment Ion Statistics</span>
+              <span ng-show="isProcessing"
+                >Processing. This May Take a Few Minutes...</span
+              >
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

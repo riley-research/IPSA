@@ -137,23 +137,8 @@ myApp.controller(
       precursor: { selected: true, color: "#666666" },
       unassigned: { selected: true, color: "#A6A6A6" },
 
-      fullGlycanAttached: {
-        selected: false,
-        color: "#820CAD",
-        label: "Full Glycan Attached",
-      },
-      partialGlycanHexNAcAttached: {
-        selected: false,
-        color: "#0D75BC",
-        label: "Only HexNAc Attached",
-      },
-      fullGlycanLost: {
-        selected: false,
-        color: "#07A14A",
-        label: "Full Glycan Lost",
-      },
-
-      glycanOption: { value: "fullGlycanAttached", color: "#820CAD" },
+      // values can be "fullGlycanAttached", "partialGlycanHexNAcAttached", or "fullGlycanLost"
+      glycanOption: { values: ["fullGlycanAttached"], color: "#FF0000" },
     };
 
     $scope.checkResults = {

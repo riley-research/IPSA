@@ -49,6 +49,10 @@ class AminoAcid {
 	}
 }
 
+class GlycanMasses {
+    public static $HexNAc = 203.07937;
+}
+
 class Peptide {
 	public $aminoAcids;
 	public $precursorMz;
@@ -131,19 +135,6 @@ class Peptide {
 	
 	function CalculateFragmentMZs() {
 		$length = count($this->aminoAcids);
-
-		error_log("CalculateFragmentMZs function called with " . $length . " amino acids.");
-        error_log("Sequence: " . $this->sequence);
-        error_log("Precursor Charge: " . $this->precursorCharge);
-        error_log("Charge: " . $this->charge);
-        error_log("Fragment Types: " . json_encode($this->fragTypes));
-        error_log("Tolerance: " . $this->tolerance);
-        error_log("Tolerance Type: " . $this->toleranceType);
-        error_log("Matching Type: " . $this->matchType);
-        error_log("Cutoff: " . $this->cutoff);
-        error_log("Mods: " . json_encode($this->modifications));
-        error_log("Peak Data: " . json_encode($this->peakData));
-        error_log("Base Peak: " . json_encode($this->basePeak));	
 
 		if ($this->fragTypes->a->selected) {
 			for ($i = 1; $i < $length; $i++) {
@@ -895,6 +886,28 @@ function BasePeak($data) {
 	return $returnPeak;
 }
 
+function cloneMods($mods) {
+    return array_map(function($mod) {
+        return clone $mod;
+    }, $mods);
+}
+
+function generatePeptideData($data, $glycanOption, $mods) {
+    error_log("Glycan Option: " . $glycanOption);
+    error_log("Mods: " . json_encode($mods));
+
+    $basePeak = BasePeak($data->peakData);
+    $peptide = new Peptide($data->sequence, $data->precursorCharge, $data->charge, $data->fragmentTypes, $data->tolerance, $data->toleranceType, $data->matchingType, $data->cutoff, $basePeak);
+
+    $peptide->AddMods($mods);
+    $peptide->AddPeaks($data->peakData);
+    $peptide->precursorMass = $peptide->CalculatePrecursorMass();
+    $peptide->CalculateFragmentMZs();
+    $peptide->MatchFragments();
+
+    return array("glycanOption" => $glycanOption, "peptide" => $peptide);
+}
+
 // $data->peakData
 $data = json_decode(file_get_contents("php://input"));
 
@@ -918,21 +931,26 @@ if (empty($data->sequence)) {
 	echo json_encode(array("error" => "Mass tolerance must be greater than zero"));
 } elseif($data->cutoff < 0) {
 	echo json_encode(array("error" => "Matching threshold must be positive or zero"));
-} else {
-	$basePeak = BasePeak($data->peakData);
-	// all data is good. process peptide
-	$peptide = new Peptide($data->sequence, $data->precursorCharge, $data->charge, $data->fragmentTypes, $data->tolerance, $data->toleranceType, $data->matchingType, $data->cutoff, $basePeak);
-	if (empty($data->mods)) {
-		$data->mods = array();
-	} 
-	$peptide->AddMods($data->mods);
-	$peptide->AddPeaks($data->peakData, $basePeak);
-	$peptide->precursorMass = $peptide->CalculatePrecursorMass();
-	// generate all theoretical peptide fragments
-	$peptide->CalculateFragmentMZs();
-	// match these fragments to the submitted data
-	$peptide->MatchFragments();
+} else {	
+	$glycanOptions = array(
+        "fullGlycanAttached" => cloneMods($data->mods),
+        "partialGlycanHexNAcAttached" => array_map(function($mod) {
+            $mod = clone $mod;
+            $mod->deltaMass = GlycanMasses::$HexNAc;
+            return $mod;
+        }, cloneMods($data->mods)),
+        "fullGlycanLost" => array_map(function($mod) {
+            $mod = clone $mod;
+            $mod->deltaMass = 0;
+            return $mod;
+        }, cloneMods($data->mods))
+    );
 
-	echo json_encode($peptide);
+    $results = array();
+    foreach ($glycanOptions as $option => $mods) {
+        $results[] = generatePeptideData($data, $option, $mods);
+    }
+
+    echo json_encode($results);
 }
 ?>
