@@ -3,6 +3,7 @@ angular.module("IPSA.bulk.controller").controller("GraphCtrl", [
   "$log",
   "$http",
   "$localStorage",
+
   function ($scope, $log, $http, $localStorage) {
     var populateMods = function () {
       var returnArray = [];
@@ -14,6 +15,25 @@ angular.module("IPSA.bulk.controller").controller("GraphCtrl", [
         });
       }
       return returnArray;
+    };
+
+    const glycanMasses = {
+      Neu5Ac: {
+        monoisotopic: 291.09542,
+        average: 291.25458,
+      },
+      Hexose: {
+        monoisotopic: 162.05282,
+        average: 162.1406,
+      },
+      HexNAc: {
+        monoisotopic: 203.07937,
+        average: 203.19252,
+      },
+      Fucose: {
+        monoisotopic: 146.05791,
+        average: 146.1412,
+      },
     };
 
     $scope.set = {
@@ -185,8 +205,9 @@ angular.module("IPSA.bulk.controller").controller("GraphCtrl", [
       let submitData;
 
       if ($scope.invalidColors()) {
+        return;
       } else {
-        // only send over relevant data for processing
+        // Only send over relevant data for processing
         if ($scope.db.items[0].hasOwnProperty("sN")) {
           submitData = $scope.db.items.map(({ mZ, intensity, sN }) => ({
             mZ,
@@ -207,13 +228,38 @@ angular.module("IPSA.bulk.controller").controller("GraphCtrl", [
           charge = $scope.peptide.charge;
         }
 
+        // Modify mods based on the glycan option
+        var mods = $scope.peptide.mods;
+        if ($scope.checkModel.glycanOption.value === "fullGlycanLost") {
+          mods = $scope.peptide.mods.map((mod) => ({ ...mod, deltaMass: 0 }));
+        } else if (
+          $scope.checkModel.glycanOption.value === "partialGlycanHexNAcAttached"
+        ) {
+          mods = $scope.peptide.mods.map((mod) => ({
+            ...mod,
+            deltaMass: glycanMasses.HexNAc.monoisotopic,
+          }));
+        } else if (
+          $scope.checkModel.glycanOption.value === "fullGlycanAttached"
+        ) {
+          mods = $scope.peptide.mods;
+        } else if (
+          $scope.checkModel.glycanOption.value === "partialGlycanUserUploaded"
+        ) {
+          // Assuming partialGlycanMasses is an array of user-uploaded masses
+          mods = $scope.peptide.mods.map((mod, index) => ({
+            ...mod,
+            deltaMass: $scope.partialGlycanMasses[index] || mod.deltaMass,
+          }));
+        }
+
         var data = {
           sequence: $scope.peptide.sequence,
           precursorCharge: $scope.peptide.precursorCharge,
           charge: charge,
           fragmentTypes: $scope.checkModel,
           peakData: submitData,
-          mods: $scope.peptide.mods,
+          mods: mods,
           toleranceType: $scope.cutoffs.toleranceType,
           tolerance: $scope.cutoffs.tolerance,
           matchingType: $scope.cutoffs.matchingType,
@@ -223,7 +269,7 @@ angular.module("IPSA.bulk.controller").controller("GraphCtrl", [
         $scope.submittedData = data;
 
         $http.post(url, data).then(function (response) {
-          // if errors exist, alert user
+          // If errors exist, alert user
           if (response.data.hasOwnProperty("error")) {
             alert(response.data.error);
           } else {
