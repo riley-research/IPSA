@@ -1,5 +1,6 @@
 import AutoGraphIcon from "@mui/icons-material/AutoGraph";
 import { Button, ButtonGroup, Stack, SvgIcon, Typography } from "@mui/material";
+import { observer } from "mobx-react";
 import React from "react";
 import DataSelect from "./DataSelect";
 
@@ -13,10 +14,9 @@ const BulkDataUploadOptions: React.FC = () => {
         gap={4}
       >
         <Stack direction="row" gap={2} alignItems="end" flexWrap={"wrap"}>
-          <DataSelect labelText="Identifications" />
-          <DataSelect />
-          <DataSelect />
-          <DataSelect />
+          <DataSelect labelText="Identifications" fileType="Identifications" />
+          <DataSelect labelText="Peak List" fileType="PeakList" />
+          <DataSelect labelText="Modifications" fileType="Modifications" />
         </Stack>
         <ButtonGroup
           variant="contained"
@@ -51,4 +51,4 @@ const BulkDataUploadOptions: React.FC = () => {
   );
 };
 
-export default BulkDataUploadOptions;
+export default observer(BulkDataUploadOptions);
