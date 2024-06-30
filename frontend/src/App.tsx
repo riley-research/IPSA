@@ -1,6 +1,7 @@
 import { ThemeProvider } from "@mui/material";
 import "./App.css";
 import MainActivity from "./components/MainActivity";
+import "./initializeGlobals";
 import mainTheme from "./theme";
 
 function App() {
