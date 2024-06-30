@@ -1,12 +1,16 @@
 import {
   addDoc,
   collection,
+  deleteDoc,
+  doc,
   onSnapshot,
   query,
+  updateDoc,
   where,
 } from "firebase/firestore";
-import { ref, uploadBytes } from "firebase/storage";
+import { deleteObject, ref, uploadBytes } from "firebase/storage";
 import { makeAutoObservable, runInAction } from "mobx";
+import { readFileAsText } from "src/helpers";
 import { firestore, storage } from "../firebase";
 import { UploadedFile, UploadedFileType } from "../types/DataUploadTypes";
 
@@ -17,43 +21,110 @@ class DataUploadStore {
     makeAutoObservable(this);
   }
 
-  async uploadFile(file: File, userId: string, type: UploadedFileType) {
+  async uploadFile(
+    file: File,
+    userId: string,
+    type: UploadedFileType
+  ): Promise<string> {
+    const timestamp = Date.now();
+    const storagePath = `${type}/${userId}/${timestamp}_${file.name}`;
+    const storageRef = ref(storage, storagePath);
+
+    await uploadBytes(storageRef, file);
+
+    let csvText = null;
+    if (file.type === "text/csv") {
+      csvText = await readFileAsText(file);
+    }
+
+    let newName = file.name;
+    let duplicateCount = 1;
+    // Convert iterator to array and check for duplicate names
+    const allFiles = Array.from(this.files.values());
+    while (allFiles.some((f) => f.name === newName)) {
+      newName = `${file.name} (${duplicateCount++})`;
+    }
+
+    const docData = {
+      name: newName,
+      userId: userId,
+      path: storageRef.fullPath,
+      createdAt: new Date(),
+      type,
+      csvText,
+    };
+
+    const docRef = await addDoc(collection(firestore, type), docData);
+    const newFile = {
+      docId: docRef.id,
+      name: newName,
+      userId: userId,
+      path: storageRef.fullPath,
+      createdAt: new Date(),
+      type,
+      csvText,
+    };
+
+    runInAction(() => {
+      this.files.set(docRef.id, newFile);
+    });
+
+    return newName; // Return the unique name instead of the path
+  }
+
+  async updateFileName(fileId: string, newName: string) {
     try {
-      const timestamp = Date.now();
-      const storagePath = `${type}/${userId}/${timestamp}_${file.name}`;
-      const storageRef = ref(storage, storagePath);
+      const fileToUpdate = this.files.get(fileId);
+      if (fileToUpdate) {
+        // Update the document in Firestore
+        const docRef = doc(firestore, fileToUpdate.type, fileId);
+        await updateDoc(docRef, {
+          name: newName,
+        });
+        console.log(
+          "[DataUploadStore][updateFileName] Firestore document updated"
+        );
 
-      await uploadBytes(storageRef, file);
-      console.log("[DataUploadStore][uploadFile] File uploaded to storage");
+        // Update local map
+        runInAction(() => {
+          const updatedFile = {
+            ...fileToUpdate,
+            name: newName,
+          };
+          this.files.set(fileId, updatedFile);
+        });
 
-      const docRef = await addDoc(collection(firestore, type), {
-        name: file.name,
-        userId: userId,
-        path: storageRef.fullPath,
-        createdAt: new Date(),
-        type,
-      });
-
-      console.log("[DataUploadStore][uploadFile] Firestore document created");
-
-      // Update the files map immediately after the document is created
-      const newFile = {
-        docId: docRef.id,
-        name: file.name,
-        userId: userId,
-        path: storageRef.fullPath,
-        createdAt: new Date(),
-        type,
-      };
-
-      runInAction(() => {
-        this.files.set(docRef.id, newFile);
-      });
-
-      console.log("[DataUploadStore][uploadFile] Local file map updated");
+        console.log("[DataUploadStore][updateFileName] Local file map updated");
+      }
     } catch (error) {
       console.error(
-        "[DataUploadStore][uploadFile] Error uploading file:",
+        "[DataUploadStore][updateFileName] Error updating file name:",
+        error
+      );
+    }
+  }
+
+  async deleteFile(fileId: string) {
+    try {
+      const fileToDelete = this.files.get(fileId);
+      if (fileToDelete) {
+        // Delete the file from Firebase Storage
+        const fileRef = ref(storage, fileToDelete.path);
+        await deleteObject(fileRef);
+        console.log("[DataUploadStore][deleteFile] File deleted from storage");
+
+        // Delete the document from Firestore
+        const docRef = doc(firestore, fileToDelete.type, fileId);
+        await deleteDoc(docRef);
+        console.log("[DataUploadStore][deleteFile] Firestore document deleted");
+
+        runInAction(() => {
+          this.files.delete(fileId);
+        });
+      }
+    } catch (error) {
+      console.error(
+        "[DataUploadStore][deleteFile] Error deleting file:",
         error
       );
     }

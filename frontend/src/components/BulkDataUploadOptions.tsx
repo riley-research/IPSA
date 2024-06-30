@@ -1,10 +1,18 @@
 import AutoGraphIcon from "@mui/icons-material/AutoGraph";
 import { Button, ButtonGroup, Stack, SvgIcon, Typography } from "@mui/material";
 import { observer } from "mobx-react";
-import React from "react";
+import React, { useEffect } from "react";
+import DataUploadStore from "src/stores/DataUploadStore";
+import UserStore from "src/stores/UserStore";
 import DataSelect from "./DataSelect";
+import PeptideSelect from "./PeptideSelect";
 
 const BulkDataUploadOptions: React.FC = () => {
+  useEffect(() => {
+    if (DataUploadStore.files.size > 0) {
+      UserStore.loadSelectedFiles();
+    }
+  }, [DataUploadStore.files.keys()]);
   return (
     <Stack gap={6} marginTop="15px" marginLeft={"10px"}>
       <Stack
@@ -17,6 +25,7 @@ const BulkDataUploadOptions: React.FC = () => {
           <DataSelect labelText="Identifications" fileType="Identifications" />
           <DataSelect labelText="Peak List" fileType="PeakList" />
           <DataSelect labelText="Modifications" fileType="Modifications" />
+          <PeptideSelect />
         </Stack>
         <ButtonGroup
           variant="contained"
