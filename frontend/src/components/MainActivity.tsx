@@ -1,6 +1,7 @@
 import { Box } from "@mui/material";
 import { observer } from "mobx-react";
 import BulkDataUploadOptions from "./BulkDataUploadOptions";
+import PeptideSelect from "./PeptideSelect";
 import GlobalSettingsButton from "./buttons/GlobalSettingsButton";
 
 const MainActivity = () => {
@@ -23,6 +24,8 @@ const MainActivity = () => {
       >
         <BulkDataUploadOptions />
       </div>
+
+      <PeptideSelect />
 
       {/* Floating Settings Button */}
       <GlobalSettingsButton />
