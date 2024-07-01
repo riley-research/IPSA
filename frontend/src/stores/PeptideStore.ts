@@ -1,7 +1,9 @@
 import { getDownloadURL, ref } from "firebase/storage";
 import { computed, makeAutoObservable } from "mobx";
 import Papa from "papaparse";
+import { testScan } from "src/components/testdata";
 import { storage } from "src/firebase";
+import { processData } from "src/processDataHelpers";
 import DataUploadStore from "./DataUploadStore";
 
 interface Peptide {
@@ -143,6 +145,12 @@ class PeptideStore {
       console.error("Error processing MGF file:", error);
       throw new Error("Failed to process MGF file.");
     }
+  };
+
+  processData = async () => {
+    const result = await processData(testScan);
+
+    console.log("result", result);
   };
 }
 
