@@ -13,12 +13,23 @@ import { makeAutoObservable, runInAction } from "mobx";
 import { readFileAsText } from "src/helpers";
 import { firestore, storage } from "../firebase";
 import { UploadedFile, UploadedFileType } from "../types/DataUploadTypes";
+import UserStore from "./UserStore";
 
 class DataUploadStore {
   files: Map<string, UploadedFile> = new Map();
 
   constructor() {
     makeAutoObservable(this);
+  }
+
+  get selectedPeakList() {
+    const selectedPeakList = UserStore.selectedFiles.PeakList;
+
+    if (selectedPeakList) {
+      return Array.from(this.files.values()).find(
+        (file) => file.name === selectedPeakList
+      );
+    }
   }
 
   async uploadFile(
