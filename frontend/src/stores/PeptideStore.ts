@@ -1,4 +1,4 @@
-import { makeAutoObservable } from "mobx";
+import { computed, makeAutoObservable } from "mobx";
 import Papa from "papaparse";
 
 interface Peptide {
@@ -10,7 +10,7 @@ interface Peptide {
 
 class PeptideStore {
   peptides: Peptide[] = [];
-  selectedPeptide: string = "";
+  selectedPeptideScanId: string = "";
   precursorCharge: number = 1;
   maxFragmentCharge: number = 1;
   fragmentTolerance: number = 10.0; // Default in ppm
@@ -20,12 +20,18 @@ class PeptideStore {
     makeAutoObservable(this);
   }
 
+  get selectedPeptide() {
+    return computed(() => {
+      return this.peptides.find((p) => p.Scan === this.selectedPeptideScanId);
+    }).get();
+  }
+
   setPeptides(peptides: Peptide[]) {
     this.peptides = peptides;
   }
 
-  setSelectedPeptide(peptide: string) {
-    this.selectedPeptide = peptide;
+  setSelectedPeptideScanId(peptide: string) {
+    this.selectedPeptideScanId = peptide;
   }
 
   setPrecursorCharge(charge: number) {
