@@ -61,13 +61,13 @@ class PeptideFragment {
   type: string;
   sequence: string;
   charge: number;
-  mz: number;
+  mZ: number;
 
-  constructor(type: string, sequence: string, charge: number, mz: number) {
+  constructor(type: string, sequence: string, charge: number, mZ: number) {
     this.type = type;
     this.sequence = sequence;
     this.charge = charge;
-    this.mz = mz;
+    this.mZ = mZ;
   }
 }
 
@@ -99,14 +99,14 @@ class Tolerance {
 }
 
 class Peak {
-  mz: number;
+  mZ: number;
   intensity: number;
   percentBasePeak: number;
   sn: number | null;
   matchedFeatures: MatchedFeature[];
 
   constructor(feature: any, basePeak: any) {
-    this.mz = feature.mZ;
+    this.mZ = feature.mZ;
     this.intensity = feature.intensity;
     this.percentBasePeak = (100 * feature.intensity) / basePeak.intensity;
     this.sn = feature.sN ?? null;
@@ -126,16 +126,16 @@ class MatchedFeature {
     this.feature = matchedFeature;
     if (isPPM) {
       this.massError =
-        ((matchedPeakMz - matchedFeature.mz) / matchedFeature.mz) * 1e6;
+        ((matchedPeakMz - matchedFeature.mZ) / matchedFeature.mZ) * 1e6;
     } else {
-      this.massError = matchedPeakMz - matchedFeature.mz;
+      this.massError = matchedPeakMz - matchedFeature.mZ;
     }
   }
 }
 
 class Precursor {
   charge: number;
-  mz: number;
+  mZ: number;
   number: string;
   type: string;
   isPrecursor: boolean = true;
@@ -148,7 +148,7 @@ class Precursor {
     neutralLoss = ""
   ) {
     this.charge = charge;
-    this.mz = (mass + ChemistryConstants.Proton * originalCharge) / charge;
+    this.mZ = (mass + ChemistryConstants.Proton * originalCharge) / charge;
     this.number = originalCharge === 1 ? "+H" : `+${originalCharge}H`;
     this.type = "M";
 
@@ -297,19 +297,19 @@ class Peptide {
 
   matchFragments() {
     this.fragments.forEach((fragment) => {
-      const tolerance = new Tolerance(fragment.mz, this.tolerance, this.isPPM);
+      const tolerance = new Tolerance(fragment.mZ, this.tolerance, this.isPPM);
       this.peaks.forEach((peak) => {
-        if (tolerance.contains(peak.mz)) {
+        if (tolerance.contains(peak.mZ)) {
           if (this.matchType === "Intensity" && peak.intensity >= this.cutoff) {
             peak.matchedFeatures.push(
-              new MatchedFeature(fragment, peak.mz, this.isPPM)
+              new MatchedFeature(fragment, peak.mZ, this.isPPM)
             );
           } else if (
             this.matchType === "% Base Peak" &&
             peak.percentBasePeak >= this.cutoff
           ) {
             peak.matchedFeatures.push(
-              new MatchedFeature(fragment, peak.mz, this.isPPM)
+              new MatchedFeature(fragment, peak.mZ, this.isPPM)
             );
           } else if (
             this.matchType === "S/N" &&
@@ -317,7 +317,7 @@ class Peptide {
             peak.sn >= this.cutoff
           ) {
             peak.matchedFeatures.push(
-              new MatchedFeature(fragment, peak.mz, this.isPPM)
+              new MatchedFeature(fragment, peak.mZ, this.isPPM)
             );
           }
         }
@@ -330,11 +330,11 @@ class Peptide {
         i,
         this.precursorCharge
       );
-      const tolerance = new Tolerance(precursor.mz, this.tolerance, this.isPPM);
+      const tolerance = new Tolerance(precursor.mZ, this.tolerance, this.isPPM);
       this.peaks.forEach((peak) => {
-        if (tolerance.contains(peak.mz)) {
+        if (tolerance.contains(peak.mZ)) {
           peak.matchedFeatures.push(
-            new MatchedFeature(precursor, peak.mz, this.isPPM)
+            new MatchedFeature(precursor, peak.mZ, this.isPPM)
           );
         }
       });
