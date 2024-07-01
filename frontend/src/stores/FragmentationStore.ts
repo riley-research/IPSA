@@ -1,8 +1,8 @@
 import { makeAutoObservable } from "mobx";
 
 class FragmentationStore {
-  nTerminalSelected: string[] = [];
-  cTerminalSelected: string[] = [];
+  nTerminalSelected: string[] = ["b"];
+  cTerminalSelected: string[] = ["y"];
 
   constructor() {
     makeAutoObservable(this);

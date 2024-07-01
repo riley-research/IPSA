@@ -13,10 +13,7 @@ interface Peptide {
   Modification: string;
 }
 
-type ScanData = {
-  mz: string[];
-  intensity: string[];
-};
+type ScanData = { mZ: number; intensity: number }[];
 
 class PeptideStore {
   peptides: Peptide[] = [];
@@ -55,6 +52,8 @@ class PeptideStore {
           selectedPeakListPath,
           parseInt(selectedPeptide.Scan)
         );
+
+      this.setPrecursorCharge(parseInt(selectedPeptide.Charge));
     }
   }
   setPrecursorCharge(charge: number) {
@@ -95,19 +94,22 @@ class PeptideStore {
       let isScan = false,
         foundScan = false,
         currentScanNumber = 0;
-      let mz: string[] = [],
+      let mZ: string[] = [],
         intensity: string[] = [];
-      let scanData: { mz: string[]; intensity: string[] }[] = [];
+      let scanData: ScanData = [];
 
       lines.forEach((line) => {
         if (line.trim().startsWith("BEGIN IONS")) {
           isScan = true;
           foundScan = false;
-          mz = [];
+          mZ = [];
           intensity = [];
         } else if (line.trim().startsWith("END IONS") && isScan && foundScan) {
-          if (mz.length && intensity.length) {
-            scanData.push({ mz, intensity });
+          if (mZ.length && intensity.length) {
+            scanData = mZ.map((mZValue, index) => ({
+              mZ: parseFloat(mZValue),
+              intensity: parseFloat(intensity[index]),
+            }));
           }
           isScan = false;
           foundScan = false;
@@ -117,7 +119,7 @@ class PeptideStore {
             (line.includes("TITLE=") || line.startsWith("SCANS="))
           ) {
             const scanNumber = parseInt(line.split("=").pop() ?? "0");
-            if ((targetScanNumber = scanNumber)) {
+            if (targetScanNumber === scanNumber) {
               foundScan = true;
               currentScanNumber = scanNumber;
             } else {
@@ -130,17 +132,17 @@ class PeptideStore {
               !isNaN(parseFloat(parts[0])) &&
               !isNaN(parseFloat(parts[1]))
             ) {
-              mz.push(parts[0]);
+              mZ.push(parts[0]);
               intensity.push(parts[1]);
             }
           }
         }
       });
 
-      console.log("MGF data processed successfully for valid scans.");
-      this.scanData = scanData?.[0];
+      console.log("MGF data processed successfully for the target scan.");
 
-      return scanData?.[0];
+      this.scanData = scanData;
+      return scanData;
     } catch (error) {
       console.error("Error processing MGF file:", error);
       throw new Error("Failed to process MGF file.");
@@ -148,9 +150,26 @@ class PeptideStore {
   };
 
   processData = async () => {
-    const result = await processData(testScan);
+    if (this.selectedPeptide) {
+      const input = {
+        sequence: this.selectedPeptide.Sequence,
+        precursorCharge: this.precursorCharge,
+        charge: this.maxFragmentCharge + 1, // TODO: figure this out
+        fragmentTypes: testScan.fragmentTypes,
+        peakData: this.scanData,
+        mods: testScan.mods,
+        toleranceType: "ppm",
+        tolerance: this.fragmentTolerance,
+        matchingType: "% Base Peak",
+        cutoff: 0,
+      };
 
-    console.log("result", result);
+      console.log("Processing data with input:", input);
+
+      const result = await processData(input);
+
+      console.log("result", result);
+    }
   };
 }
 

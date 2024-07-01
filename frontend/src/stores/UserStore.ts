@@ -22,7 +22,6 @@ class UserStore {
     const userRef = doc(firestore, "Users", this.userId);
     try {
       await setDoc(userRef, { selectedFiles: this.selectedFiles });
-      console.log("Selected files saved to Firestore.");
     } catch (error) {
       console.error("Error saving selected files: ", error);
     }
@@ -41,7 +40,6 @@ class UserStore {
             this.setSelectedFile(key, fileName);
           });
         });
-        console.log("Selected files loaded from Firestore.");
       } else {
         console.log("No selected files found in Firestore.");
       }
